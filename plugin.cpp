@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <time.h>
 #include "plugin.h"
-#include "dbglog.h"
 
 
 SynthParameter const paraStartFrq =
@@ -235,11 +234,6 @@ FSM_VST_Plugin::FSM_VST_Plugin (audioMasterCallback audioMaster)
 	startConsoleWin(300, 300, "Debug");
 #endif //DEBUG_CONSOLE
 
-	dprintf("rand %i %i %i\n", RND(256), RND(256), RND(256));
-	dprintf("rand %i %i %i\n", RND(256), RND(256), RND(256));
-	dprintf("rand %i %i %i\n", RND(256), RND(256), RND(256));
-	dprintf("rand %i %i %i\n", RND(256), RND(256), RND(256));
-	dprintf("rand %i %i %i\n", RND(256), RND(256), RND(256));
 	initProcess ();
 	suspend ();
 }
@@ -273,7 +267,7 @@ void FSM_VST_Plugin::setProgramName (char* name)
 	//	vst_strncpy (programs[curProgram].name, name, kVstMaxProgNameLen); 
 	//if (name != NULL) {
 
-	//	//dbprintf("setProgramName %s\n", name);
+	//	//dprintf("setProgramName %s\n", name);
 	//}
 }
 
@@ -582,7 +576,7 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 			AClick = trk->AntiClick;
 			Age = trk->Age;
 			Amp = trk->Amp;
-			dbprintf("retrigger.\n");
+			dprintf("retrigger.\n");
 		}
 		if (trk->LeftOver <= 0)
 		{
