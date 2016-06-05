@@ -378,7 +378,6 @@ void FSM_Voice::setParameters(ProgramParameters *ptval, float srate)
 	if (this->currentNote != NOTE_OFF)
 	{
 		int v = this->currentNote-24;
-		v = (v & 15) - 1 + 12 * (v >> 4);
 		this->PitchLimit = (float)(440.0*pow(2, (v - 69) / 12.0));
 	}
 }
