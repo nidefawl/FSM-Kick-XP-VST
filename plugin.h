@@ -106,8 +106,6 @@ public:
 	float ThisCDecay;
 	float CurVolume;
 	float ThisCurVolume;
-	float LastValue;
-	float AntiClick;
 	float ClickAmt;
 	float PunchAmt;
 	float BuzzAmt;
@@ -119,8 +117,6 @@ public:
 	float MulCAmp;
 	float Frequency;
 	int SamplesToGo;
-	int Retrig;
-	int RetrigCount;
 
 	double xSin, xCos, dxSin, dxCos;
 

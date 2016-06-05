@@ -562,13 +562,10 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 
 	trk->OscPhase = fmod(trk->OscPhase, 1.0);
 	float Ratio = trk->ThisEndFrq / trk->ThisStartFrq;
-	if (trk->AntiClick<-64000) trk->AntiClick = -64000;
-	if (trk->AntiClick >= 64000) trk->AntiClick = 64000;
 	int i = 0;
 	double xSin = trk->xSin, xCos = trk->xCos;
 	double dxSin = trk->dxSin, dxCos = trk->dxCos;
 	float LVal = 0;
-	float AClick = trk->AntiClick;
 	float Amp = trk->Amp;
 	float DecAmp = trk->DecAmp;
 	float BAmp = trk->BAmp;
@@ -583,15 +580,6 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 	int proc = 0;
 	while (i<c)
 	{
-		
-		if (trk->SamplesToGo == 1)
-		{
-			trk->trigger();
-			AClick = trk->AntiClick;
-			Age = trk->Age;
-			Amp = trk->Amp;
-			dprintf("retrigger.\n");
-		}
 		if (trk->LeftOver <= 0)
 		{
 			trk->LeftOver = 32;
@@ -618,7 +606,7 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 			{
 				trk->Amp = 0;
 				trk->DecAmp = 0;
-				if (fabs(AClick)<0.00012f && !trk->SamplesToGo)
+				if (!trk->SamplesToGo)
 					return amphigh;
 			}
 
@@ -651,7 +639,7 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 			{
 				for (int j = i; j<max; j++)
 				{
-					pout[j] += float(LVal = float(AClick + Amp*Vol*xSin));
+					pout[j] += float(LVal = float(Amp*Vol*xSin));
 					if (xSin>0)
 					{
 						float D = (float)(Amp*Vol*BAmp*xSin*xCos);
@@ -663,20 +651,17 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 					xSin = xSin2; xCos = xCos2;
 					Amp -= DecAmp;
 					BAmp *= MulBAmp;
-					AClick *= 0.98f;
 				}
 			}
 			else
 				for (int j = i; j<max; j++)
 				{
-					pout[j] += float(LVal = float(AClick + Amp*Vol*xSin));
+					pout[j] += float(LVal = float(Amp*Vol*xSin));
 					double xSin2 = double(xSin*dxCos + xCos*dxSin);
 					double xCos2 = double(xCos*dxCos - xSin*dxSin);
 					xSin = xSin2; xCos = xCos2;
 					Amp -= DecAmp;
-					AClick *= 0.98f;
 				}
-			if (fabs(AClick)<0.0001f) AClick = 0.0001f;
 			if (OldAmp>0.1f && CAmp>0.001f)
 			{
 				int max2 = i + min(max - i, 1024 - Age);
@@ -704,8 +689,6 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 	}
 	
 	trk->xSin = xSin, trk->xCos = xCos;
-	trk->LastValue = LVal;
-	trk->AntiClick = AClick;
 	trk->Amp = Amp;
 	trk->BAmp = BAmp;
 	trk->CAmp = CAmp;
@@ -772,13 +755,10 @@ FSM_Voice::FSM_Voice(VstInt32 note, VstInt32 velocity, VstInt32 delta) {
 	Amp = 0;
 	LeftOver = 32000;
 	EnvPhase = 6553600;
-	Retrig = 0;
 	SamplesToGo = 0;
 	EnvPhase = 0;
 	OscPhase = 0;
 	CurVolume = 32000;
-	LastValue = 0;
-	AntiClick = 0;
 	LeftOver = 0;
 	Age = 0;
 	Amp = 0;
@@ -796,14 +776,7 @@ FSM_Voice::FSM_Voice(VstInt32 note, VstInt32 velocity, VstInt32 delta) {
 
 void FSM_Voice::trigger()
 {
-	if (this->Retrig && this->RetrigCount>0)
-	{
-		this->SamplesToGo = this->Retrig;
-		this->RetrigCount--;
-	}
-	else
-		this->SamplesToGo = 0;
-	this->AntiClick = this->LastValue;
+	this->SamplesToGo = 0;
 	this->EnvPhase = 0;
 	this->OscPhase = this->ClickAmt;
 	this->LeftOver = 0;
