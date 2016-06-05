@@ -1,8 +1,14 @@
-
 #include "plugin.h"
-#include <cmath>
+#include "Debug.h"
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <io.h>
+#include <conio.h>
+#include <fcntl.h>
 using namespace std;
 #ifdef DEBUG
+
 #ifdef DEBUG_CONSOLE
 void FSM_VST_Plugin::startConsoleWin(int width, int height, char* fname)
 {
@@ -42,7 +48,9 @@ void FSM_VST_Plugin::startConsoleWin(int width, int height, char* fname)
 	fprintf(stdout, "Test output to stdout\n");
 	fprintf(stderr, "Test output to stderr\n");
 }
+
 #endif // DEBUG_CONSOLE
+
 #ifdef DISPATCHER_DEBUG_TRACE
 
 //-----------------------------------------------------------------------------------------------------------------

@@ -3,25 +3,17 @@
 
 #include <vector>
 #include <public.sdk/source/vst2.x/audioeffectx.h>
+#include "Debug.h"
+#include "lock.h"
 
-#ifdef DEBUG
-#include <io.h>
-#include <windows.h>
-#include <conio.h>
-#include <fcntl.h>
-#define DEBUG_CONSOLE
-#define dprintf(...) printf (__VA_ARGS__)
-#define DISPATCHER_DEBUG_TRACE
-#else
-#define dprintf(...) {}
-#endif
+
 
 
 #define PLUGIN_EFFECT_NAME "None"
 #define PLUGIN_VENDOR_NAME "FSM"
 #define PLUGIN_PRODUCT_NAME "FSM Kick XP"
-#define LOG_SCALE_GAIN (0.3)
-#define SCALE_GAIN_OVERHEAD (1.3)
+#define LOG_SCALE_GAIN (0.3f)
+#define SCALE_GAIN_OVERHEAD (1.3f)
 
 #define NOTE_OFF				255
 
@@ -145,13 +137,14 @@ public:
 	VstInt32 currentVelocity;
 	VstInt32 currentDelta;
 	bool released;
+	bool killed;
 	FSM_Voice(VstInt32 note, VstInt32 velocity, VstInt32 delta);
-	void release();
+	void release(bool decay);
 	void setParameters(ProgramParameters* vals, float sr);
 	void trigger();
-	double velocity()const
+	float velocity()const
 	{
-		return currentVelocity / 127.0;
+		return currentVelocity / 127.0f;
 	}
 
 };
@@ -243,6 +236,7 @@ private:
 	float fVolume;
 	bool issetprogram;
 	float thumpdata1[1024];
+	Lock* lock;
 
 };
 

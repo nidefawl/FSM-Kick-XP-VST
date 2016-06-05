@@ -15,7 +15,16 @@
     <LocalDebuggerCommand>C:\Users\Michael\Desktop\VSTDEV\VST-Plugin Unit Test (x64).exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\FSM_KickXP.x64.dll</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerAttach>false</LocalDebuggerAttach>
+    <LocalDebuggerAttach>true</LocalDebuggerAttach>
+    <LocalDebuggerMergeEnvironment>false</LocalDebuggerMergeEnvironment>
+    <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Ableton|x64'">
+    <LocalDebuggerCommand>C:\ProgramData\Ableton\Live 9.5 Beta\Program\Ableton Live 9.6 Beta.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerAttach>true</LocalDebuggerAttach>
     <LocalDebuggerMergeEnvironment>false</LocalDebuggerMergeEnvironment>
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
   </PropertyGroup>
