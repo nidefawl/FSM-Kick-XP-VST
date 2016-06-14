@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ShowAllFiles>true</ShowAllFiles>
+    <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>C:\Users\Michael\Desktop\VSTDEV\vsthostx64\savihost.exe</LocalDebuggerCommand>
@@ -15,7 +15,7 @@
     <LocalDebuggerCommand>C:\Users\Michael\Desktop\VSTDEV\VST-Plugin Unit Test (x64).exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\FSM_KickXP.x64.dll</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerAttach>true</LocalDebuggerAttach>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
     <LocalDebuggerMergeEnvironment>false</LocalDebuggerMergeEnvironment>
     <LocalDebuggerDebuggerType>Auto</LocalDebuggerDebuggerType>
   </PropertyGroup>

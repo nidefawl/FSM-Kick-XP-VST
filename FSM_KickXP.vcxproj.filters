@@ -11,12 +11,14 @@
     <ClCompile Include="..\INCLUDES\VST3 SDK\public.sdk\source\vst2.x\vstplugmain.cpp">
       <Filter>deps</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="..\DebugMsg\senddebugmsg.cpp" />
+    <ClCompile Include="..\DebugMsg\Debug.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="plugin.h" />
-    <ClInclude Include="Debug.h" />
     <ClInclude Include="lock.h" />
+    <ClInclude Include="..\DebugMsg\Debug.h" />
+    <ClInclude Include="..\DebugMsg\senddebugmsg.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vstplug.def" />

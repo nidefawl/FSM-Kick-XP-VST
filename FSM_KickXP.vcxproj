@@ -35,14 +35,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\DebugMsg\Debug.cpp" />
+    <ClCompile Include="..\DebugMsg\senddebugmsg.cpp" />
     <ClCompile Include="..\INCLUDES\VST3 SDK\public.sdk\source\vst2.x\audioeffect.cpp" />
     <ClCompile Include="..\INCLUDES\VST3 SDK\public.sdk\source\vst2.x\audioeffectx.cpp" />
     <ClCompile Include="..\INCLUDES\VST3 SDK\public.sdk\source\vst2.x\vstplugmain.cpp" />
-    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="plugin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Debug.h" />
+    <ClInclude Include="..\DebugMsg\Debug.h" />
+    <ClInclude Include="..\DebugMsg\senddebugmsg.h" />
     <ClInclude Include="lock.h" />
     <ClInclude Include="plugin.h" />
   </ItemGroup>
@@ -145,20 +147,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.dll</TargetExt>
-    <OutDir>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\</OutDir>
-    <TargetName>$(ProjectName).$(Platform)</TargetName>
+    <OutDir>C:\VstPlugins\dev\</OutDir>
+    <TargetName>$(ProjectName).x64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_UNIT|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.dll</TargetExt>
-    <OutDir>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\</OutDir>
-    <TargetName>$(ProjectName).$(Platform)</TargetName>
+    <OutDir>C:\VstPlugins\dev\</OutDir>
+    <TargetName>$(ProjectName).x64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Ableton|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetExt>.dll</TargetExt>
-    <OutDir>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\</OutDir>
-    <TargetName>$(ProjectName).$(Platform)</TargetName>
+    <OutDir>C:\VstPlugins\dev\</OutDir>
+    <TargetName>$(ProjectName).x64</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -169,8 +170,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\</OutDir>
-    <TargetName>$(ProjectName).$(Platform)</TargetName>
+    <OutDir>C:\VstPlugins\dev\</OutDir>
+    <TargetName>$(ProjectName).x64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -222,24 +223,23 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WINDOWS;_WINDOWS;WIN32;_USRDLL;_USE_MATH_DEFINES;DEBUG;DEBUG=1;_DEBUG=1;_CRT_SECURE_NO_DEPRECATE;VST_64BIT_PLATFORM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\Michael\Desktop\VSTDEV\INCLUDES\VST GUI\;C:\Users\Michael\Desktop\VSTDEV\INCLUDES\VST3 SDK\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <MinimalRebuild>false</MinimalRebuild>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>16Bytes</StructMemberAlignment>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <ExpandAttributedSource>true</ExpandAttributedSource>
       <AssemblerOutput>All</AssemblerOutput>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\$(ProjectName).x64.dll</OutputFile>
+      <OutputFile>C:\VstPlugins\dev\FSM_KickXP.x64.dll</OutputFile>
       <AdditionalDependencies>shell32.lib;msvcrtd.lib;ole32.lib;gdi32.lib;User32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>vstplug.def</ModuleDefinitionFile>
@@ -272,7 +272,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\$(ProjectName).x64.dll</OutputFile>
+      <OutputFile>C:\VstPlugins\dev\FSM_KickXP.x64.dll</OutputFile>
       <AdditionalDependencies>shell32.lib;msvcrtd.lib;ole32.lib;gdi32.lib;User32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>vstplug.def</ModuleDefinitionFile>
@@ -288,16 +288,14 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WINDOWS;_WINDOWS;WIN32;_USRDLL;_USE_MATH_DEFINES;DEBUG;DEBUG=1;_DEBUG=1;_CRT_SECURE_NO_DEPRECATE;VST_64BIT_PLATFORM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\Michael\Desktop\VSTDEV\INCLUDES\VST GUI\;C:\Users\Michael\Desktop\VSTDEV\INCLUDES\VST3 SDK\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <MinimalRebuild>false</MinimalRebuild>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>16Bytes</StructMemberAlignment>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <ExpandAttributedSource>true</ExpandAttributedSource>
       <AssemblerOutput>All</AssemblerOutput>
@@ -305,7 +303,6 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\$(ProjectName).x64.dll</OutputFile>
       <AdditionalDependencies>shell32.lib;msvcrtd.lib;ole32.lib;gdi32.lib;User32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>vstplug.def</ModuleDefinitionFile>
@@ -314,6 +311,7 @@
       <AssemblyDebug>true</AssemblyDebug>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>false</DataExecutionPrevention>
+      <OutputFile>C:\VstPlugins\dev\FSM_KickXP.x64.dll</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -375,13 +373,15 @@
       </SDLCheck>
       <OmitFramePointers>
       </OmitFramePointers>
+      <EnableEnhancedInstructionSet>
+      </EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>C:\PluginManager\configs\default\hosts\Ableton\categories\dev\$(ProjectName).x64.dll</OutputFile>
+      <OutputFile>C:\VstPlugins\dev\FSM_KickXP.x64.dll</OutputFile>
       <AdditionalDependencies>libcmt.lib;uuid.lib;shell32.lib;ole32.lib;gdi32.lib;User32.lib;advapi32.lib</AdditionalDependencies>
       <ModuleDefinitionFile>vstplug.def</ModuleDefinitionFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
