@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <public.sdk/source/vst2.x/audioeffectx.h>
-#include "Debug.h"
 #include "lock.h"
-
+//#define dprintf(...) {}
+//#include "../DebugMsg/Debug.h"
 
 
 
@@ -16,6 +16,9 @@
 #define SCALE_GAIN_OVERHEAD (1.3f)
 
 #define NOTE_OFF				255
+#define VOICE_HOLD 0
+#define VOICE_DECAY 1
+#define VOICE_KILLED 2
 
 typedef unsigned char byte;
 typedef unsigned short word;
@@ -116,7 +119,6 @@ public:
 	float CAmp;
 	float MulCAmp;
 	float Frequency;
-	int SamplesToGo;
 
 	double xSin, xCos, dxSin, dxCos;
 
@@ -132,10 +134,11 @@ public:
 	VstInt32 currentNote;
 	VstInt32 currentVelocity;
 	VstInt32 currentDelta;
-	bool released;
-	bool killed;
+	VstInt32 releaseDelta;
+	int state;
 	FSM_Voice(VstInt32 note, VstInt32 velocity, VstInt32 delta);
-	void release(bool decay);
+	void setNoteReleaseDeta(VstInt32 delta);
+	void setState(int newState);
 	void setParameters(ProgramParameters* vals, float sr);
 	void trigger();
 	float velocity()const
@@ -209,20 +212,15 @@ public:
 		return &(curProgram >= 0 && curProgram < kNumPrograms ? programs[curProgram] : programs[0]);
 	}
 
-#ifdef DISPATCHER_DEBUG_TRACE
-	VstIntPtr dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
-#endif // DEBUG
-
-private:
-
 #ifdef DEBUG_CONSOLE
+	VstIntPtr dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
 	void startConsoleWin(int width, int height, char* fname);
 	HANDLE hout;
 #endif // DEBUG_CONSOLE
 
 private:
 	void noteOn(VstInt32 note, VstInt32 velocity, VstInt32 delta);
-	void noteOff(VstInt32 note);
+	void noteOff(VstInt32 note, VstInt32 delta);
 	void allNotesOff(bool decay);
 	void initProcess();
 	bool processVoice(FSM_Voice *trk, float *pout, int c, float gain);

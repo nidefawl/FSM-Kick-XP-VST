@@ -3,7 +3,17 @@
 #include "plugin.h"
 
 using namespace std;
-
+class Locker {
+	Lock* l;
+public:
+	Locker(Lock* l) {
+		this->l = l;
+		this->l->lock();
+	};
+	~Locker() {
+		this->l->unlock();
+	}
+};
 SynthParameter const paraStartFrq =
 {
 	"StartFrq",
@@ -194,14 +204,12 @@ FSM_VST_Plugin::FSM_VST_Plugin (audioMasterCallback audioMaster)
 	programs = new FSM_VST_Program[kNumPrograms];
 	fVolume = 0.8f;
 	issetprogram = false;
-#ifdef DEBUG_CONSOLE
-	hout = NULL;
-#endif // DEBUG_CONSOLE
+
 	// initialize programs
 	programs[0].set("Init", 145, 50, 55, 28, 47, 30, 27, 55, 55, 1, 32, 105);
 	programs[1].set("Soft", 99, 66,0, 0, 17, 104, 17, 69, 164, 94, 41, 139);
 	for (int i = 2; i < kNumPrograms; i++) {
-		char presetname[16];
+		char presetname[kVstMaxProgNameLen];
 		sprintf_s(presetname, kVstMaxProgNameLen, "Random %i", i);
 		programs[i].set(presetname, 
 			64 + RND(64),
@@ -227,9 +235,6 @@ FSM_VST_Plugin::FSM_VST_Plugin (audioMasterCallback audioMaster)
 		isSynth ();
 		setUniqueID ('FSMX');			// <<<! *must* change this!!!!
 	}
-#ifdef DEBUG_CONSOLE
-	startConsoleWin(300, 300, "Debug");
-#endif //DEBUG_CONSOLE
 
 	initProcess ();
 	suspend ();
@@ -237,9 +242,19 @@ FSM_VST_Plugin::FSM_VST_Plugin (audioMasterCallback audioMaster)
 
 void FSM_VST_Plugin::initProcess()
 {
+#ifdef DEBUG_CONSOLE
+	initDebug();
+#endif //DEBUG_CONSOLE
 	for (int i = 0; i<1024; i++)
 		thumpdata1[i] = float(sin(1.37*i + 0.1337*(1024 - i)*sin(1.1*i))*pow(1.0 / 256.0, i / 1024.0));
 }
+
+#ifdef DEBUG_CONSOLE
+VstIntPtr FSM_VST_Plugin::dispatcher(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) {
+	debugDispatcher(opcode, index, value, ptr, opt);
+	return AudioEffectX::dispatcher(opcode, index, value, ptr, opt);
+}
+#endif
 
 FSM_VST_Plugin::~FSM_VST_Plugin ()
 {
@@ -371,7 +386,7 @@ void FSM_Voice::setParameters(ProgramParameters *ptval, float srate)
 	this->DTime = (float)(to_range(ptval->bDecTime, paraDecTime)*srate / 240.0);
 	this->RSlope = (float)pow(20, to_range(ptval->bRelSlope, paraRelSlope) / 240.0 - 1) * 25 / srate;
 	this->BDecay = (float)(to_range(ptval->bBDecay, paraBDecay) / 240.0);
-	this->CDecay = (float)(to_range(ptval->bCDecay, paraCDecay) / 240.0);
+	this->CDecay = (float)(to_range(ptval->bCDecay, paraCDecay) / 2240.0);
 	this->ClickAmt = (float)(to_range(ptval->bClickAmt, paraClickAmt) / 100.0);
 	this->BuzzAmt = 3 * (float)(to_range(ptval->bBuzzAmt, paraBuzzAmt) / 100.0);
 	this->PunchAmt = (float)(to_range(ptval->bPunchAmt, paraPunchAmt) / 100.0);
@@ -438,6 +453,7 @@ VstInt32 FSM_VST_Plugin::getVendorVersion ()
 
 VstInt32 FSM_VST_Plugin::canDo (char* text)
 {
+	//dprintf("canDo %s\n", text);
 	if (!strcmp (text, "receiveVstEvents"))
 		return 1;
 	if (!strcmp(text, "receiveVstMidiEvent"))
@@ -499,7 +515,7 @@ VstInt32 FSM_VST_Plugin::processEvents(VstEvents* ev)
 				velocity = 0;	// note off by velocity 0
 			if (!velocity) {
 				ENTER_LOCK;
-				noteOff(note);
+				noteOff(note, event->deltaFrames);
 			}
 			else {
 				ENTER_LOCK;
@@ -521,14 +537,14 @@ VstInt32 FSM_VST_Plugin::processEvents(VstEvents* ev)
 	return 1;
 }
 
-void FSM_VST_Plugin::noteOff(VstInt32 note) {
+void FSM_VST_Plugin::noteOff(VstInt32 note, VstInt32 deltaFrames) {
 
 	std::vector<FSM_Voice*>::iterator it = voices.begin();
 	while (it != voices.end())
 	{
 		FSM_Voice *voice = *it;
 		if (voice->currentNote == note) {
-			voice->release(true);
+			voice->setNoteReleaseDeta(deltaFrames);
 		}
 		it++;
 	}
@@ -549,7 +565,7 @@ void FSM_VST_Plugin::allNotesOff(bool decay) {
 	while (it != voices.end())
 	{
 		FSM_Voice *_note = *it;
-		_note->release(decay);
+		_note->setState(decay ? VOICE_DECAY : VOICE_KILLED);
 		it++;
 	}
 }
@@ -577,6 +593,15 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 	float sr = this->getSampleRate();
 	float odsr = 1.0f / sr;
 	int proc = 0;
+	int loop = 0;
+	//if (trk->EnvPhase == 0) {
+	//	VstTimeInfo* timeinfo = getTimeInfo(kVstTempoValid | kVstPpqPosValid);
+	//	if (timeinfo) {
+	//		dprintf("processing first sample at\n");
+	//		dprintf("ppqPos %f\n", timeinfo->ppqPos);
+	//		dprintf("sample %f\n", timeinfo->samplePos);
+	//	}
+	//}
 	while (i<c)
 	{
 		if (trk->LeftOver <= 0)
@@ -605,8 +630,7 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 			{
 				trk->Amp = 0;
 				trk->DecAmp = 0;
-				if (!trk->SamplesToGo)
-					return amphigh;
+				return amphigh;
 			}
 
 			trk->BAmp = BAmp = trk->BuzzAmt*(float)(pow(1.0f / 256.0f, trk->ThisBDecay*trk->EnvPhase*(odsr * 10)));
@@ -626,8 +650,6 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 			trk->dxSin = dxSin, trk->dxCos = dxCos;
 		}
 		int max = min(i + trk->LeftOver, c);
-		if (trk->SamplesToGo>0)
-			max = min(max, i + trk->SamplesToGo - 1);
 		
 		if (Amp>0.00001f && Vol>0)
 		{
@@ -683,7 +705,6 @@ bool FSM_VST_Plugin::processVoice(FSM_Voice *trk, float *pout, int c, float gain
 		}
 		else
 			trk->LeftOver = 32000;
-		if (trk->SamplesToGo>0) trk->SamplesToGo -= max - i;
 		i = max;
 	}
 	
@@ -701,26 +722,35 @@ void FSM_VST_Plugin::processReplacing(float** inputs, float** outputs, VstInt32 
 	memset(outputs[1], 0, sampleFrames * sizeof(float));
 	if (issetprogram)
 		return;
+
+	float gain = powf(fVolume*SCALE_GAIN_OVERHEAD, 1.F / LOG_SCALE_GAIN);
+	Locker l(lock);
 	if (this->voices.empty()) {
 		return;
 	}
-	float gain = powf(fVolume*SCALE_GAIN_OVERHEAD, 1.F / LOG_SCALE_GAIN);
-	lock->lock();
+	getVstVersion();
 	for (std::vector<FSM_Voice*>::iterator it = this->voices.begin(); it != this->voices.end(); ) {
 		FSM_Voice* voice = *it;
-		if (voice->killed) {
+		if (voice->state >= VOICE_KILLED) {
 			delete voice;
 			it = voices.erase(it);
 			continue;
 		}
 		float* out1 = outputs[0];
 		int samples = sampleFrames;
+		if (voice->releaseDelta >= sampleFrames) { // release in a future block
+			voice->releaseDelta -= sampleFrames;
+			if (voice->releaseDelta < 0) {
+				voice->releaseDelta = 0;
+			}
+		}
 		if (voice->currentDelta >= sampleFrames)	// future
 		{
 			voice->currentDelta -= sampleFrames;
 			++it;
 			continue;
 		}
+		
 		if (voice->currentDelta > 0)
 		{
 			out1 += voice->currentDelta;
@@ -730,7 +760,10 @@ void FSM_VST_Plugin::processReplacing(float** inputs, float** outputs, VstInt32 
 		if (samples > 0) {
 
 			bool amplitudeHigh = this->processVoice(voice, out1, samples, gain);
-			if (voice->released && !amplitudeHigh) {
+			if (voice->releaseDelta < sampleFrames) {
+				voice->setState(VOICE_DECAY); // decay state not used at all
+			}
+			if (voice->state >= VOICE_KILLED || !amplitudeHigh) {// voices are removed when amplitude is really low or it voice was killed (no decay)
 				delete voice;
 				it = voices.erase(it);
 				continue;
@@ -738,7 +771,6 @@ void FSM_VST_Plugin::processReplacing(float** inputs, float** outputs, VstInt32 
 		}
 		++it;
 	}
-	lock->unlock();
 	memcpy(outputs[1], outputs[0], sizeof(float)*sampleFrames);
 }
 
@@ -747,9 +779,8 @@ FSM_Voice::FSM_Voice(VstInt32 note, VstInt32 velocity, VstInt32 delta) {
 	currentNote = note;
 	currentDelta = delta;
 	currentVelocity = velocity;
-	released = false;
-	killed = false;
-	SamplesToGo = 0;
+	releaseDelta = -1;
+	state = 0;
 	LeftOver = 0;
 	EnvPhase = 0;
 	OscPhase = 0;
@@ -770,7 +801,7 @@ FSM_Voice::FSM_Voice(VstInt32 note, VstInt32 velocity, VstInt32 delta) {
 
 void FSM_Voice::trigger()
 {
-	this->SamplesToGo = 0;
+	this->state = VOICE_HOLD;
 	this->EnvPhase = 0;
 	this->OscPhase = this->ClickAmt;
 	this->LeftOver = 0;
@@ -790,13 +821,14 @@ void FSM_Voice::trigger()
 	this->ThisCurVolume = this->CurVolume;
 }
 
-void FSM_Voice::release(bool decay) {
-	released = true;
-	killed = !decay;
-	if (this->EnvPhase<this->ThisDTime)
-	{
-		this->ThisDTime = (float) this->EnvPhase;
+void FSM_Voice::setNoteReleaseDeta(VstInt32 delta) {
+	if (releaseDelta < 0 || releaseDelta > delta) {
+		releaseDelta = delta;
 	}
+}
+
+void FSM_Voice::setState(int newState) {
+	this->state = max(this->state, newState);
 }
 
 FSM_VST_Program::FSM_VST_Program()
